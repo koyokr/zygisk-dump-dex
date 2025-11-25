@@ -91,7 +91,7 @@ impl Module for MyModule {
 register_zygisk_module!(MyModule);
 static mut OLD_OPEN_COMMON: usize = 0;
 
-#[naked]
+#[unsafe(naked)]
 pub extern "C" fn new_open_common_wrapper() {
     unsafe {
         naked_asm!(
