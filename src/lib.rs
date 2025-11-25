@@ -1,5 +1,3 @@
-#![feature(naked_functions)]
-
 use dobby_rs::Address;
 use jni::JNIEnv;
 use log::{error, info, trace};
@@ -93,36 +91,34 @@ static mut OLD_OPEN_COMMON: usize = 0;
 
 #[unsafe(naked)]
 pub extern "C" fn new_open_common_wrapper() {
-    unsafe {
-        naked_asm!(
-            r#"
-            sub sp, sp, 0x280
-            stp x29, x30, [sp, #0]
-            stp x0, x1, [sp, #0x10]
-            stp x2, x3, [sp, #0x20]
-            stp x4, x5, [sp, #0x30]
-            stp x6, x7, [sp, #0x40]
-            stp x8, x9, [sp, #0x50]
+    naked_asm!(
+        r#"
+        sub sp, sp, 0x280
+        stp x29, x30, [sp, #0]
+        stp x0, x1, [sp, #0x10]
+        stp x2, x3, [sp, #0x20]
+        stp x4, x5, [sp, #0x30]
+        stp x6, x7, [sp, #0x40]
+        stp x8, x9, [sp, #0x50]
 
-            mov x0, x1
-            mov x1, x2
-            bl {new_open_common}
+        mov x0, x1
+        mov x1, x2
+        bl {new_open_common}
 
-            ldp x29, x30, [sp, #0]
-            ldp x0, x1, [sp, #0x10]
-            ldp x2, x3, [sp, #0x20]
-            ldp x4, x5, [sp, #0x30]
-            ldp x6, x7, [sp, #0x40]
-            ldp x8, x9, [sp, #0x50]
-            add sp, sp, 0x280
-            adrp x16, {old_open_common}
-            ldr x16, [x16, #:lo12:{old_open_common}]
-            br x16"#,
-            new_open_common = sym new_open_common,
-            old_open_common = sym OLD_OPEN_COMMON,
-            // options(noreturn)
-        );
-    }
+        ldp x29, x30, [sp, #0]
+        ldp x0, x1, [sp, #0x10]
+        ldp x2, x3, [sp, #0x20]
+        ldp x4, x5, [sp, #0x30]
+        ldp x6, x7, [sp, #0x40]
+        ldp x8, x9, [sp, #0x50]
+        add sp, sp, 0x280
+        adrp x16, {old_open_common}
+        ldr x16, [x16, #:lo12:{old_open_common}]
+        br x16"#,
+        new_open_common = sym new_open_common,
+        old_open_common = sym OLD_OPEN_COMMON,
+        // options(noreturn)
+    );
 }
 
 extern "C" fn new_open_common(base: usize, size: usize) {
